@@ -1,0 +1,140 @@
+\documentclass{scrartcl}
+
+\usepackage{bytefield}
+\usepackage{rotating}
+
+\title{Problem set 1}
+\subtitle{TMA4280 Introduction to Supercomputing}
+
+\author{Sigve Sebastian Farstad}
+
+\newcounter{exercise}
+
+\newcommand\exercise{
+\stepcounter{exercise}
+\textbf{Exercise \theexercise.}
+}
+
+\newcommand\solution{
+\textbf{Solution:}
+\\
+}
+
+\parindent 0in
+\parskip 1em
+
+\begin{document}
+
+\maketitle
+
+\section{Exercises}
+
+\exercise
+Consider the maximum and minimum numbers derived in (6)-(7).
+How many digits should we include in each of these numbers?
+
+\solution
+Roughly 7.22 digits, or "about 7 digits", as the course material puts it.
+
+\exercise
+Find the binary floating point representation of the decimal number 4.25 in single precision.
+
+\solution
+\begin{figure}[h]
+\begin{center}
+\begin{bytefield}{32}
+\\
+\bitbox{1}{\rotatebox{90}{\tiny Sign}} &
+\bitbox{8}{Exponent} &
+\bitbox{23}{Mantissa}
+\\
+\bitbox{1}{0} & \bitbox{1}{1} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{1} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{1} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} &
+\bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0} & \bitbox{1}{0}
+\end{bytefield}
+\end{center}
+\end{figure}
+
+\exercise
+How many digits of accuracy does a floating point number in double precision have?
+
+\solution
+The mantissa in the IEEE754 double precision float is 52 bits wide.
+This means that the significand precision is 53 bits, which is gives roughly 15.95 digits of accuracy.
+
+\newpage
+\exercise
+Propose a way to avoid the above limitation.
+
+\solution
+This exercise is about the limitation of traditional for-loops that can only run \texttt{MAX\_INT} number of times.
+If program requires a for-loop to run longer than an int counter can count, several techniques can be used to work around the issue:
+
+\begin{itemize}
+\item{The for-loop can use a wider fixed-size integer representation, or even an integer of arbitrary width.}
+\item{The for-loop can be partially unrolled, if the counter variable is only a couple of bits too short}.
+\item{The programmer can use nested for-loops to achieve a larger maximum loop count.}
+\end{itemize}
+
+\exercise
+Let $ c $ be a scalar (a floating point number), let $ \vec x $, $ \vec y $, and $ \vec z $ be vectors, each comprising $ n $ floating point numbers, and let $ \mathbf{A} $ be an $ n \times n $ matrix.
+How many floating point operations does it take to perform the following basic linear algebra operations: $ \vec z = \vec x + c \vec y $ (1)?
+What about the matrix-vector product $ \mathbf{y} = \mathbf{A} \mathbf{x} $ (2)?
+
+\solution
+Computing (1) requires $ n $ operations for calculating $ c \vec y $, and then $ n $ further operations for adding the result to $ \vec x $.
+This means that computing (1) takes a total of $ 2n $ floating-point operations.
+
+Computing (2) requires $ n \times n $ dot products of vectors of size $ n $.
+A single dot product of two vectors of size $ n $ requres $ n $ multiplications and $ n - 1 $ additions.
+This means that the computation of (2) requires $ (n \times n) (n + n - 1) = 2 n^3 - n^2 $ floating point operations.
+\setcounter{equation}{2}
+
+\exercise
+Let $ \mathbf{A} $ be an $ n \times n $ matrix, and $ \vec x $ and $ \vec b $ be two vectors of length $ n $.
+Assume that we want to solve the linear system of equations
+\begin{equation}
+\mathbf{A} \vec x = \vec b
+\end{equation}
+using Gaussian elimination.
+Assume further that the matrix $ \mathbf{A} $ is dense, meaning that we need to store all the $ n^2 $ entries in the matrix.
+What is (approximately) the largest equation system we can solve (i.e., the
+largest number of $ n $ we can use) and still be able to fit the whole problem in the main memory, which we assume is 1 Gbyte?
+
+\solution
+Assuming 32-bit single-precision floating point numbers, the largest $ n $ is given by
+$$ n_{largest} = \lfloor \sqrt{1 Gbyte / 32 bits} \rfloor = 15811 $$
+meaning that the largest equation system we can solve is one with no more than approximately 15800 equations with the approximately 15800 unknowns.
+
+
+\section{Code}
+
+Attached is the source code for a program written in C which calculates
+$$ \mathbf{y} = \mathbf{A}\mathbf{x} $$
+where
+
+\[
+\mathbf{A} =
+\left[ \begin{array}{ccc}
+0.3 & 0.4 & 0.3 \\
+0.7 & 0.1 & 0.2 \\
+0.5 & 0.5 & 0.0 \end{array}
+\right]
+,
+\mathbf{x} =
+\left[ \begin{array}{c}
+1.0 \\
+1.0 \\
+1.0 \end{array}
+\right]
+.
+\]
+
+The code is organized into a light-weight matrix library, and a short main function that uses the library to calculate the correct answer.
+
+\end{document}
